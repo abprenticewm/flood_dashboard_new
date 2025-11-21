@@ -1,0 +1,4 @@
+timestamp_utc,status,runtime_sec,message
+2025-11-10 16:02:13.268326,failure,0.0636384487152099,"fetch_data.py failed: Command '['python', 'fetch_data.py']' returned non-zero exit status 1."
+2025-11-10 16:02:13.343172,failure,0.0590384006500244,"analyze_rate_of_change.py failed: Command '['python', 'analyze_rate_of_change.py']' returned non-zero exit status 1."
+2025-11-10 16:02:13.432946,failure,0.056638240814208984,"compare_to_p90.py failed: Command '['python', 'compare_to_p90.py']' returned non-zero exit status 1."
