@@ -26,15 +26,15 @@ def build_map(df):
         color="high_flow",
         size="flow_cfs",
         hover_name="site_name",
-        hover_data={"hover_text": True},
+        hover_data={
+            "flow_cfs": True,
+            "p90_flow_cfs": True,
+            "ratio": True,
+            "latitude": False,
+            "longitude": False,
+        },
         zoom=5,
         height=700,
-    )
-    fig.update_traces(hovertemplate="%{customdata[0]}")
-    fig.update_layout(
-        mapbox_style="open-street-map",
-        margin={"r":0,"t":0,"l":0,"b":0},
-        coloraxis_colorbar=dict(title="High Flow")
     )
     return fig
 
