@@ -17,7 +17,7 @@ def build_map(df):
     # Assign unique ID for each gauge
     df["site_id"] = df.index
 
-    # Color based on pct_change_3h using your hex codes
+    # Color based on pct_change_3h using hex codes
     def color_logic(x):
         if x <= 0:
             return "#A18F65"  # brown
@@ -25,7 +25,6 @@ def build_map(df):
             return "#942719"  # red
         else:
             return "#5279A8"  # blue
-
     df["color_group"] = df["pct_change_3h"].apply(color_logic)
 
     # Size classes based on flow
@@ -36,8 +35,11 @@ def build_map(df):
             return 20
         else:
             return 30
-
     df["size_class"] = df["flow_cfs"].apply(size_class)
+
+    # Calculate center for initial zoom
+    center_lat = df["latitude"].mean()
+    center_lon = df["longitude"].mean()
 
     # Scatter map
     fig = px.scatter_map(
@@ -56,7 +58,8 @@ def build_map(df):
             "longitude": False
         },
         custom_data=["site_id", "site_name", "flow_cfs", "p90_flow_cfs", "ratio", "pct_change_3h"],
-        zoom=5,
+        zoom=6,  # zoomed-in view
+        center={"lat": center_lat, "lon": center_lon},
         height=700,
         color_discrete_map={
             "#A18F65": "#A18F65",
@@ -64,7 +67,9 @@ def build_map(df):
             "#5279A8": "#5279A8"
         }
     )
+
     return fig
+
 
 
 # -------------------------------
