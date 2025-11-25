@@ -17,27 +17,55 @@ def build_map(df):
     # Assign unique ID for each gauge
     df["site_id"] = df.index
 
+    # Color based on pct_change_3h using your hex codes
+    def color_logic(x):
+        if x <= 0:
+            return "#A18F65"  # brown
+        elif x > 25:
+            return "#942719"  # red
+        else:
+            return "#5279A8"  # blue
+
+    df["color_group"] = df["pct_change_3h"].apply(color_logic)
+
+    # Size classes based on flow
+    def size_class(flow):
+        if flow <= 50:
+            return 10
+        elif flow <= 200:
+            return 20
+        else:
+            return 30
+
+    df["size_class"] = df["flow_cfs"].apply(size_class)
+
     # Scatter map
     fig = px.scatter_map(
         df,
         lat="latitude",
         lon="longitude",
-        color="high_flow",
-        size="flow_cfs",
+        color="color_group",
+        size="size_class",
         hover_name="site_name",
         hover_data={
             "flow_cfs": True,
             "p90_flow_cfs": True,
             "ratio": True,
+            "pct_change_3h": True,
             "latitude": False,
             "longitude": False
         },
-        custom_data=["site_id", "site_name", "flow_cfs", "p90_flow_cfs", "ratio"],  # all info we need
+        custom_data=["site_id", "site_name", "flow_cfs", "p90_flow_cfs", "ratio", "pct_change_3h"],
         zoom=5,
         height=700,
+        color_discrete_map={
+            "#A18F65": "#A18F65",
+            "#942719": "#942719",
+            "#5279A8": "#5279A8"
+        }
     )
-
     return fig
+
 
 # -------------------------------
 # Dash app
@@ -72,17 +100,24 @@ def main_map_layout():
 # -------------------------------
 @app.callback(
     Output('page-content', 'children'),
-    Input('url', 'pathname'),
-    Input('url', 'search')
+    Input('url', 'pathname')
 )
-def display_page(pathname, search):
+def display_page(pathname):
     if pathname == '/':
         return main_map_layout()
     elif pathname.startswith('/gauge/'):
-        # Extract info from URL query string if you prefer, or you can pass state
+        site_id = int(pathname.split('/')[-1])
+        df = pd.read_csv(DATA_FILE)
+        gauge_row = df.loc[site_id]
         return html.Div([
-            html.H1(f"Gauge Info Page", style={"textAlign": "center"}),
-            html.Div("This page will show the clicked gauge info.")
+            html.H1(f"Gauge: {gauge_row['site_name']}", style={"textAlign": "center"}),
+            html.Br(),
+            html.Ul([
+                html.Li(f"Flow (cfs): {gauge_row['flow_cfs']}"),
+                html.Li(f"P90 Flow (cfs): {gauge_row['p90_flow_cfs']}"),
+                html.Li(f"Percent of P90: {gauge_row['ratio']*100:.1f}%"),
+                html.Li(f"3h Percent Change: {gauge_row['pct_change_3h']}")
+            ])
         ])
     else:
         return html.H1("404: Page not found")
@@ -108,14 +143,8 @@ def update_map(n_clicks):
 )
 def go_to_gauge(clickData):
     if clickData:
-        # Directly access customdata by index
+        # Simple direct indexing
         site_id = clickData['points'][0]['customdata'][0]
-        site_name = clickData['points'][0]['customdata'][1]
-        flow = clickData['points'][0]['customdata'][2]
-        p90 = clickData['points'][0]['customdata'][3]
-        ratio = clickData['points'][0]['customdata'][4]
-
-        # Navigate to gauge page using site_id
         return f'/gauge/{site_id}'
     return '/'
 
