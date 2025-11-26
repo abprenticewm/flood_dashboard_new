@@ -43,7 +43,6 @@ def build_map(df):
     center_lat = df["latitude"].mean()
     center_lon = df["longitude"].mean()
 
-    # Scatter map
     fig = px.scatter_map(
         df,
         lat="latitude",
@@ -67,7 +66,7 @@ def build_map(df):
             "ratio",
             "pct_change_3h"
         ],
-        zoom=6,  # zoomed-in view
+        zoom=6,
         center={"lat": center_lat, "lon": center_lon},
         height=700,
         color_discrete_map={
@@ -92,30 +91,69 @@ app.layout = html.Div([
 
 
 # -------------------------------
-# Main map page layout
+# Main map page layout (with sidebar)
 # -------------------------------
 def main_map_layout():
     df = pd.read_csv(DATA_FILE)
+
     return html.Div([
-        html.H1("Flood Gauge Dashboard", style={"textAlign": "center"}),
+        # Whole page container
+        html.Div([
+            # ---- Sidebar ----
+            html.Div([
+                html.H2("Menu", style={"textAlign": "center"}),
+                html.Hr(),
+                # you will add more later
+            ], 
+            style={
+                "width": "18%",
+                "minWidth": "150px",
+                "background": "#f3f3f3",
+                "padding": "15px",
+                "overflowY": "auto"
+            }),
 
-        html.Div(
-            html.Button(
-                "Refresh Data",
-                id="refresh-btn",
-                n_clicks=0,
-                style={
-                    "display": "block",
-                    "margin": "10px auto",
-                    "padding": "10px 20px",
-                    "fontSize": "16px",
-                }
-            ),
-            style={"textAlign": "center"}
-        ),
+            # ---- Map area ----
+            html.Div([
+                html.H1("Flood Gauge Dashboard",
+                        style={"textAlign": "center", "marginTop": "10px"}),
 
-        dcc.Graph(id="map-graph", figure=build_map(df))
+                html.Div(
+                    html.Button(
+                        "Refresh Data",
+                        id="refresh-btn",
+                        n_clicks=0,
+                        style={
+                            "display": "block",
+                            "margin": "10px auto",
+                            "padding": "10px 20px",
+                            "fontSize": "16px",
+                        },
+                    ),
+                    style={"textAlign": "center"},
+                ),
+
+                # MAP
+                dcc.Graph(
+                    id="map-graph",
+                    figure=build_map(df),
+                    style={"height": "100%", "width": "100%"}
+                )
+            ], 
+            style={
+                "flex": "1",
+                "overflow": "hidden",
+                "display": "flex",
+                "flexDirection": "column"
+            }),
+        ],
+        style={
+            "display": "flex",
+            "height": "100vh",         # ← THE FIX 🔥 stops infinite scrolling
+            "overflow": "hidden"
+        })
     ])
+
 
 
 # -------------------------------
