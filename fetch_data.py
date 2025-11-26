@@ -13,22 +13,20 @@ import requests
 import pandas as pd
 from datetime import datetime, timedelta, timezone
 
-# directory and file paths
+# ------------------------------
+# CONFIG
+# ------------------------------
 DATA_DIR = "data"
 os.makedirs(DATA_DIR, exist_ok=True)
 
 DATA_FILE = os.path.join(DATA_DIR, "gauge_data.csv")
 
 NWIS_IV_URL = "https://waterservices.usgs.gov/nwis/iv/"
-<<<<<<< HEAD
-=======
 
 # ------------------------------
 # HELPER FUNCTIONS
 # ------------------------------
->>>>>>> 9cd881de4f1e7dff2374064056774b5d98147652
 
-# helpers
 def fetch_va_iv_since(start_time):
     """
     Fetch all VA gauges discharge readings since start_time
@@ -44,11 +42,11 @@ def fetch_va_iv_since(start_time):
         "startDT": start_time.strftime("%Y-%m-%dT%H:%M"),
         "endDT": end_time.strftime("%Y-%m-%dT%H:%M")
     }
-    # fetch data
+
     resp = requests.get(NWIS_IV_URL, params=params, timeout=30)
     resp.raise_for_status()
     j = resp.json()
-    # parse data
+
     rows = []
     for ts in j.get("value", {}).get("timeSeries", []):
         site_no = ts["sourceInfo"]["siteCode"][0]["value"]
@@ -72,7 +70,6 @@ def fetch_va_iv_since(start_time):
     df = pd.DataFrame(rows)
     return df
 
-# load last timestamp
 def load_last_timestamp(file_path):
     """
     Get the last timestamp from an existing CSV or return 24h ago if file missing
@@ -86,7 +83,6 @@ def load_last_timestamp(file_path):
     else:
         return datetime.now(timezone.utc) - timedelta(hours=24)
 
-# append new data and trim to last 24 hours
 def append_and_trim(df_new, file_path, hours=24):
     """
     Append new data to CSV and keep only last X hours
@@ -104,19 +100,15 @@ def append_and_trim(df_new, file_path, hours=24):
     df_all.to_csv(file_path, index=False)
     print(f"Saved {len(df_all)} rows to {file_path}")
 
-# main
-def main():
-<<<<<<< HEAD
-    # find last timestamp
-    last_time = load_last_timestamp(DATA_FILE)
+# ------------------------------
+# MAIN
+# ------------------------------
 
-    # fetch new readings since last timestamp
-=======
+def main():
     # Determine last timestamp
     last_time = load_last_timestamp(DATA_FILE)
 
     # Fetch new readings since last timestamp
->>>>>>> 9cd881de4f1e7dff2374064056774b5d98147652
     df = fetch_va_iv_since(last_time)
     print(f"Fetched {len(df)} readings total.")
 
@@ -126,6 +118,8 @@ def main():
     else:
         print("No new readings since last timestamp. Nothing to update.")
 
-# entry
+# ------------------------------
+# ENTRY POINT
+# ------------------------------
 if __name__ == "__main__":
     main()
