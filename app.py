@@ -77,6 +77,7 @@ def build_map(df):
     )
 
     fig.update_layout(showlegend=False)
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
     return fig
 
 
@@ -101,10 +102,12 @@ def main_map_layout():
         html.Div([
             # ---- Sidebar ----
             html.Div([
-                html.H2("Dashboard Info", style={"textAlign": "center", "marginTop": "10px"}),
+                # Dashboard title
+                html.H1("VA Flood Risk Map", style={"textAlign": "center", "marginTop": "10px"}),
+
                 html.Hr(),
-                
-                # Refresh button moved here
+
+                # Refresh button
                 html.Button(
                     "Refresh Data",
                     id="refresh-btn",
@@ -119,40 +122,39 @@ def main_map_layout():
 
                 # Placeholder for future sidebar content
                 html.P("Add legend or explanations here later.")
-            ], 
+            ],
             style={
-                "width": "18%",
-                "minWidth": "150px",
+                "width": "20%",
+                "minWidth": "180px",
                 "background": "#f3f3f3",
                 "padding": "15px",
-                "overflowY": "auto"
+                "overflowY": "auto",  # sidebar scrolls if content too long
+                "boxSizing": "border-box"
             }),
 
             # ---- Map area ----
             html.Div([
-                html.H1("Flood Gauge Dashboard",
-                        style={"textAlign": "center", "marginTop": "10px"}),
-
-                # MAP
+                # MAP fills all remaining vertical space
                 dcc.Graph(
                     id="map-graph",
                     figure=build_map(df),
                     style={"height": "100%", "width": "100%"}
                 )
-            ], 
+            ],
             style={
-                "flex": "1",
-                "overflow": "hidden",
+                "flex": "1",             # take remaining width
                 "display": "flex",
-                "flexDirection": "column"
+                "flexDirection": "column",
+                "overflow": "hidden"
             }),
         ],
         style={
             "display": "flex",
-            "height": "100vh",
+            "height": "100vh",  # full viewport height
             "overflow": "hidden"
         })
     ])
+
 
 
 
