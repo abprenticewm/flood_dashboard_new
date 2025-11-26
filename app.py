@@ -25,6 +25,7 @@ def build_map(df):
             return "#942719"  # red
         else:
             return "#5279A8"  # blue
+
     df["color_group"] = df["pct_change_3h"].apply(color_logic)
 
     # Size classes based on flow
@@ -35,6 +36,7 @@ def build_map(df):
             return 20
         else:
             return 30
+
     df["size_class"] = df["flow_cfs"].apply(size_class)
 
     # Calculate center for initial zoom
@@ -57,7 +59,14 @@ def build_map(df):
             "latitude": False,
             "longitude": False
         },
-        custom_data=["site_id", "site_name", "flow_cfs", "p90_flow_cfs", "ratio", "pct_change_3h"],
+        custom_data=[
+            "site_id",
+            "site_name",
+            "flow_cfs",
+            "p90_flow_cfs",
+            "ratio",
+            "pct_change_3h"
+        ],
         zoom=6,  # zoomed-in view
         center={"lat": center_lat, "lon": center_lon},
         height=700,
@@ -68,8 +77,8 @@ def build_map(df):
         }
     )
 
+    fig.update_layout(showlegend=False)
     return fig
-
 
 
 # -------------------------------
@@ -81,6 +90,7 @@ app.layout = html.Div([
     html.Div(id='page-content')
 ])
 
+
 # -------------------------------
 # Main map page layout
 # -------------------------------
@@ -88,17 +98,25 @@ def main_map_layout():
     df = pd.read_csv(DATA_FILE)
     return html.Div([
         html.H1("Flood Gauge Dashboard", style={"textAlign": "center"}),
+
         html.Div(
-            html.Button("Refresh Data", id="refresh-btn", n_clicks=0, style={
-                "display": "block",
-                "margin": "10px auto",
-                "padding": "10px 20px",
-                "fontSize": "16px",
-            }),
+            html.Button(
+                "Refresh Data",
+                id="refresh-btn",
+                n_clicks=0,
+                style={
+                    "display": "block",
+                    "margin": "10px auto",
+                    "padding": "10px 20px",
+                    "fontSize": "16px",
+                }
+            ),
             style={"textAlign": "center"}
         ),
+
         dcc.Graph(id="map-graph", figure=build_map(df))
     ])
+
 
 # -------------------------------
 # Page routing
@@ -110,10 +128,12 @@ def main_map_layout():
 def display_page(pathname):
     if pathname == '/':
         return main_map_layout()
+
     elif pathname.startswith('/gauge/'):
         site_id = int(pathname.split('/')[-1])
         df = pd.read_csv(DATA_FILE)
         gauge_row = df.loc[site_id]
+
         return html.Div([
             html.H1(f"Gauge: {gauge_row['site_name']}", style={"textAlign": "center"}),
             html.Br(),
@@ -124,8 +144,10 @@ def display_page(pathname):
                 html.Li(f"3h Percent Change: {gauge_row['pct_change_3h']}")
             ])
         ])
+
     else:
         return html.H1("404: Page not found")
+
 
 # -------------------------------
 # Refresh map callback
@@ -138,6 +160,7 @@ def update_map(n_clicks):
     df = pd.read_csv(DATA_FILE)
     return build_map(df)
 
+
 # -------------------------------
 # Click on gauge -> navigate
 # -------------------------------
@@ -148,10 +171,10 @@ def update_map(n_clicks):
 )
 def go_to_gauge(clickData):
     if clickData:
-        # Simple direct indexing
         site_id = clickData['points'][0]['customdata'][0]
         return f'/gauge/{site_id}'
     return '/'
+
 
 # -------------------------------
 # Auto open browser
@@ -159,10 +182,12 @@ def go_to_gauge(clickData):
 def open_browser():
     webbrowser.open_new("http://127.0.0.1:8050/")
 
+
 # -------------------------------
 # Main
 # -------------------------------
 if __name__ == "__main__":
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         Timer(1, open_browser).start()
+
     app.run(debug=True, port=8050)
