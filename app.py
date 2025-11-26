@@ -101,9 +101,24 @@ def main_map_layout():
         html.Div([
             # ---- Sidebar ----
             html.Div([
-                html.H2("Menu", style={"textAlign": "center"}),
+                html.H2("Dashboard Info", style={"textAlign": "center", "marginTop": "10px"}),
                 html.Hr(),
-                # you will add more later
+                
+                # Refresh button moved here
+                html.Button(
+                    "Refresh Data",
+                    id="refresh-btn",
+                    n_clicks=0,
+                    style={
+                        "display": "block",
+                        "margin": "10px auto",
+                        "padding": "10px 20px",
+                        "fontSize": "16px",
+                    }
+                ),
+
+                # Placeholder for future sidebar content
+                html.P("Add legend or explanations here later.")
             ], 
             style={
                 "width": "18%",
@@ -117,21 +132,6 @@ def main_map_layout():
             html.Div([
                 html.H1("Flood Gauge Dashboard",
                         style={"textAlign": "center", "marginTop": "10px"}),
-
-                html.Div(
-                    html.Button(
-                        "Refresh Data",
-                        id="refresh-btn",
-                        n_clicks=0,
-                        style={
-                            "display": "block",
-                            "margin": "10px auto",
-                            "padding": "10px 20px",
-                            "fontSize": "16px",
-                        },
-                    ),
-                    style={"textAlign": "center"},
-                ),
 
                 # MAP
                 dcc.Graph(
@@ -149,7 +149,7 @@ def main_map_layout():
         ],
         style={
             "display": "flex",
-            "height": "100vh",         # ← THE FIX 🔥 stops infinite scrolling
+            "height": "100vh",
             "overflow": "hidden"
         })
     ])
