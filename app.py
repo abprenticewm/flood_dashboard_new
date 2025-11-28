@@ -171,17 +171,61 @@ def display_page(pathname):
 
     elif pathname.startswith('/gauge/'):
         site_id = int(pathname.split('/')[-1])
-        df = pd.read_csv(DATA_FILE)
-        gauge_row = df.loc[site_id]
+
+        # Read CSV (time series)
+        df = pd.read_csv("data/gauge_data.csv")
+
+        # Fix -9999 to 0
+        df["flow_cfs"] = df["flow_cfs"].replace(-9999, 0)
+
+        # Convert timestamp
+        df["timestamp_utc"] = pd.to_datetime(df["timestamp_utc"])
+
+        # Get this gauge's site_no
+        df_main = pd.read_csv(DATA_FILE)  # main file with metadata
+        site_no = df_main.loc[site_id]["site_no"]
+        site_name = df_main.loc[site_id]["site_name"]
+
+        # Filter time series
+        gauge_df = df[df["site_no"] == site_no].sort_values("timestamp_utc")
+
+        # Last 6 hours only
+        if not gauge_df.empty:
+            latest_time = gauge_df["timestamp_utc"].max()
+            cutoff = latest_time - pd.Timedelta(hours=6)
+            gauge_df = gauge_df[gauge_df["timestamp_utc"] >= cutoff]
+
+        # Build time series figure
+        fig = px.line(
+            gauge_df,
+            x="timestamp_utc",
+            y="flow_cfs",
+            title=f"Last 6 Hours — {site_name}",
+            labels={"timestamp_utc": "Time (UTC)", "flow_cfs": "Flow (cfs)"}
+        )
+
+        fig.update_layout(
+            height=500,
+            margin=dict(l=20, r=20, t=40, b=20)
+        )
 
         return html.Div([
-            html.H1(f"Gauge: {gauge_row['site_name']}", style={"textAlign": "center"}),
+            html.H1(f"Gauge: {site_name}", style={"textAlign": "center"}),
+
+            dcc.Graph(
+                id="gauge-timeseries",
+                figure=fig,
+                style={"width": "90%", "margin": "0 auto"}
+            ),
+
             html.Br(),
+
             html.Ul([
-                html.Li(f"Flow (cfs): {gauge_row['flow_cfs']}"),
-                html.Li(f"P90 Flow (cfs): {gauge_row['p90_flow_cfs']}"),
-                html.Li(f"Percent of P90: {gauge_row['ratio']*100:.1f}%"),
-                html.Li(f"3h Percent Change: {gauge_row['pct_change_3h']}")
+                html.Li(f"Site Number: {site_no}"),
+                html.Li(f"Most Recent Flow: {df_main.loc[site_id]['flow_cfs']} cfs"),
+                html.Li(f"P90 Flow: {df_main.loc[site_id]['p90_flow_cfs']} cfs"),
+                html.Li(f"Percent of P90: {df_main.loc[site_id]['ratio']*100:.1f}%"),
+                html.Li(f"3h Percent Change: {df_main.loc[site_id]['pct_change_3h']}")
             ])
         ])
 
