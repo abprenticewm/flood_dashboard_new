@@ -4,6 +4,7 @@ from dash import Dash, html, dcc, Output, Input
 import webbrowser
 from threading import Timer
 import os
+import numpy as np
 
 DATA_FILE = "data/gauge_data_processed.csv"
 
@@ -175,8 +176,8 @@ def display_page(pathname):
         # Read CSV (time series)
         df = pd.read_csv("data/gauge_data.csv")
 
-        # Fix -9999 to 0
-        df["flow_cfs"] = df["flow_cfs"].replace(-9999, 0)
+        # Fix -9999 to nan
+        df["flow_cfs"] = df["flow_cfs"].replace(-9999, np.nan)
 
         # Convert timestamp
         df["timestamp_utc"] = pd.to_datetime(df["timestamp_utc"])
