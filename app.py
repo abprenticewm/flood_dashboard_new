@@ -5,8 +5,6 @@ import webbrowser
 from threading import Timer
 import os
 import numpy as np
-import subprocess
-import sys
 
 DATA_FILE = "data/gauge_data_processed.csv"
 
@@ -284,11 +282,8 @@ def unique_filename(base_name, ext):
     Input("refresh-btn", "n_clicks")
 )
 def update_map(n_clicks):
-    if n_clicks > 0:
-        run_update_pipeline()  # update all data before refreshing map
     df = pd.read_csv(DATA_FILE)
     return build_map(df)
-
 
 
 # -------------------------------
@@ -359,27 +354,11 @@ def open_browser():
     webbrowser.open_new("http://127.0.0.1:8050/")
 
 
-#run the data update pipeline
-def run_update_pipeline():
-    """Run the full update pipeline using the same Python interpreter."""
-    print("Running update pipeline...")
-    r = subprocess.run([sys.executable, "update_pipeline.py"])
-    if r.returncode != 0:
-        print("❌ Error running update pipeline")
-    else:
-        print("✅ Update pipeline finished successfully")
-
-
 # -------------------------------
 # Main
 # -------------------------------
 if __name__ == "__main__":
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-        # Run update pipeline 1 second after starting server
-        from threading import Timer
-        Timer(1, run_update_pipeline).start()
-
-        # Open browser
         Timer(1, open_browser).start()
 
     app.run(debug=True, port=8050)

@@ -12,6 +12,7 @@ import os
 import requests
 import pandas as pd
 from datetime import datetime, timedelta, timezone
+import numpy as np 
 
 # ------------------------------
 # CONFIG
@@ -56,8 +57,10 @@ def fetch_va_iv_since(start_time):
         for v in ts["values"][0]["value"]:
             try:
                 flow = float(v["value"])
+                if flow == -9999:   # convert USGS missing value code to NaN
+                    flow = np.nan
             except (TypeError, ValueError):
-                flow = None
+                flow = np.nan
             timestamp = v["dateTime"]
             rows.append({
                 "site_no": site_no,
