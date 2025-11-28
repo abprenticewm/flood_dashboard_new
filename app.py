@@ -1,6 +1,6 @@
 import pandas as pd
 import plotly.express as px
-from dash import Dash, html, dcc, Output, Input
+from dash import Dash, html, dcc, Output, Input, State
 import webbrowser
 from threading import Timer
 import os
@@ -173,42 +173,36 @@ def display_page(pathname):
     elif pathname.startswith('/gauge/'):
         site_id = int(pathname.split('/')[-1])
 
-        # Read CSV (time series)
-        df = pd.read_csv("data/gauge_data.csv")
-
-        # Fix -9999 to nan
-        df["flow_cfs"] = df["flow_cfs"].replace(-9999, np.nan)
-
-        # Convert timestamp
-        df["timestamp_utc"] = pd.to_datetime(df["timestamp_utc"])
-
-        # Get this gauge's site_no
-        df_main = pd.read_csv(DATA_FILE)  # main file with metadata
+        # Read the full main metadata file
+        df_main = pd.read_csv(DATA_FILE)
         site_no = df_main.loc[site_id]["site_no"]
         site_name = df_main.loc[site_id]["site_name"]
 
-        # Filter time series
-        gauge_df = df[df["site_no"] == site_no].sort_values("timestamp_utc")
+        # Read full time-series CSV (DO NOT modify -9999 here)
+        ts = pd.read_csv("data/gauge_data.csv")
+        ts["timestamp_utc"] = pd.to_datetime(ts["timestamp_utc"])
 
-        # Last 6 hours only
+        # Filter to this gauge only
+        gauge_df = ts[ts["site_no"] == site_no].sort_values("timestamp_utc")
+
+        # 6-hour window
         if not gauge_df.empty:
             latest_time = gauge_df["timestamp_utc"].max()
             cutoff = latest_time - pd.Timedelta(hours=6)
-            gauge_df = gauge_df[gauge_df["timestamp_utc"] >= cutoff]
+            gauge_6h = gauge_df[gauge_df["timestamp_utc"] >= cutoff]
+        else:
+            gauge_6h = gauge_df.copy()
 
-        # Build time series figure
+        # Build 6-hour graph
         fig = px.line(
-            gauge_df,
+            gauge_6h,
             x="timestamp_utc",
             y="flow_cfs",
             title=f"Last 6 Hours — {site_name}",
             labels={"timestamp_utc": "Time (UTC)", "flow_cfs": "Flow (cfs)"}
         )
 
-        fig.update_layout(
-            height=500,
-            margin=dict(l=20, r=20, t=40, b=20)
-        )
+        fig.update_layout(height=500, margin=dict(l=20, r=20, t=40, b=20))
 
         return html.Div([
             html.H1(f"Gauge: {site_name}", style={"textAlign": "center"}),
@@ -218,6 +212,36 @@ def display_page(pathname):
                 figure=fig,
                 style={"width": "90%", "margin": "0 auto"}
             ),
+
+            # -----------------------------
+            # Download buttons
+            # -----------------------------
+            html.Button(
+                "Download 6h Graph (PNG)",
+                id="download-graph-btn",
+                n_clicks=0,
+                style={
+                    "margin": "10px auto",
+                    "display": "block",
+                    "padding": "10px 20px",
+                    "fontSize": "16px"
+                }
+            ),
+
+            html.Button(
+                "Download Full CSV (All Data for This Site)",
+                id="download-fullcsv-btn",
+                n_clicks=0,
+                style={
+                    "margin": "10px auto",
+                    "display": "block",
+                    "padding": "10px 20px",
+                    "fontSize": "16px"
+                }
+            ),
+
+            dcc.Download(id="download-graph-file"),
+            dcc.Download(id="download-fullcsv-file"),
 
             html.Br(),
 
@@ -230,8 +254,24 @@ def display_page(pathname):
             ])
         ])
 
+
     else:
         return html.H1("404: Page not found")
+    
+#generate file names for dowloads 
+def unique_filename(base_name, ext):
+    """Generate unique filename in download_data/ with counter."""
+    folder = "download_data"
+    os.makedirs(folder, exist_ok=True)
+
+    date_str = pd.Timestamp.utcnow().strftime("%Y%m%d")
+    n = 1
+    while True:
+        filename = f"{base_name}_{date_str}_{n}.{ext}"
+        path = os.path.join(folder, filename)
+        if not os.path.exists(path):
+            return path
+        n += 1
 
 
 # -------------------------------
@@ -259,6 +299,52 @@ def go_to_gauge(clickData):
         site_id = clickData['points'][0]['customdata'][0]
         return f'/gauge/{site_id}'
     return '/'
+
+#dowload call backs 
+@app.callback(
+    Output("download-graph-file", "data"),
+    Input("download-graph-btn", "n_clicks"),
+    State("gauge-timeseries", "figure"),
+    State("url", "pathname"),
+    prevent_initial_call=True
+)
+def download_graph(n_clicks, fig, pathname):
+    site_id = int(pathname.split("/")[-1])
+
+    df_main = pd.read_csv(DATA_FILE)
+    site_name = df_main.loc[site_id]["site_name"].replace(" ", "_")
+
+    filepath = unique_filename(site_name, "png")
+
+    import plotly.io as pio
+    pio.write_image(fig, filepath, scale=2)
+
+    return dcc.send_file(filepath)
+
+@app.callback(
+    Output("download-fullcsv-file", "data"),
+    Input("download-fullcsv-btn", "n_clicks"),
+    State("url", "pathname"),
+    prevent_initial_call=True
+)
+
+def download_full_csv(n_clicks, pathname):
+    site_id = int(pathname.split("/")[-1])
+
+    df_main = pd.read_csv(DATA_FILE)
+    site_no = df_main.loc[site_id]["site_no"]
+    site_name = df_main.loc[site_id]["site_name"].replace(" ", "_")
+
+    ts = pd.read_csv("data/gauge_data.csv")
+    ts["timestamp_utc"] = pd.to_datetime(ts["timestamp_utc"])
+
+    # Filter NO -9999 changes here
+    gauge_df = ts[ts["site_no"] == site_no].sort_values("timestamp_utc")
+
+    filepath = unique_filename(site_name, "csv")
+    gauge_df.to_csv(filepath, index=False)
+
+    return dcc.send_file(filepath)
 
 
 # -------------------------------
