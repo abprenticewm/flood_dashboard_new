@@ -266,7 +266,7 @@ def display_page(pathname):
                 f"{site_name}",
                 style={"textAlign": "center", "marginTop": "15px"}
             ),
-            
+
             # -----------------------------
             # Site Info – centered below gauge title
             # -----------------------------
@@ -281,7 +281,7 @@ def display_page(pathname):
             ),
 
             # -----------------------------
-            # Main stats area – compact and pretty
+            # Main stats area – ROC, High Flow, Explanation in a line
             # -----------------------------
             html.Div(
                 style={
@@ -291,53 +291,25 @@ def display_page(pathname):
                     "gap": "20px",
                     "marginBottom": "25px",
                     "flexWrap": "wrap",
+                    "fontSize": "15px",  # unified font size for all children
                 },
                 children=[
 
-                    # Left side: ROC and High Flow side by side
+                    # Rate of Change
                     html.Div(
                         style={
-                            "display": "flex",
-                            "flexDirection": "row",
-                            "gap": "20px",
-                            "flex": "0 0 auto",
-                            "alignItems": "flex-start",
+                            "lineHeight": "1.2",
+                            "flex": "0 0 180px",  # increased horizontal space
                         },
                         children=[
-
-                            # Rate of Change
-                            html.Div(
-                                style={
-                                    "fontSize": "16px",
-                                    "lineHeight": "1.2",
-                                },
-                                children=[
-                                    html.H4("Rate of Change (%)", style={"color": "#5A4A2F", "marginBottom": "5px"}),
-                                    html.P(f"1h: {df_main.loc[site_id]['pct_change_1h']:.1f}%", style={"margin": "2px 0"}),
-                                    html.P(f"3h: {df_main.loc[site_id]['pct_change_3h']:.1f}%", style={"margin": "2px 0"}),
-                                    html.P(f"6h: {df_main.loc[site_id]['pct_change_6h']:.1f}%", style={"margin": "2px 0"}),
-                                ]
-                            ),
-
-                            # High Flow / Flow Rate
-                            html.Div(
-                                style={
-                                    "fontSize": "16px",
-                                    "lineHeight": "1.2",
-                                },
-                                children=[
-                                    html.H4("High Flow", style={"color": "#5A4A2F", "marginBottom": "5px"}),
-                                    html.P(
-                                        f"Status: {'HIGH FLOW' if df_main.loc[site_id]['flow_cfs'] >= df_main.loc[site_id]['p90_flow_cfs'] else 'Normal'}",
-                                        style={"margin": "2px 0"}
-                                    ),
-                                    html.P(f"Threshold (90th percentile): {df_main.loc[site_id]['p90_flow_cfs']} cfs", style={"margin": "2px 0"}),
-                                ]
-                            ),
+                            html.H4("Rate of Change (%)", style={"color": "#5A4A2F", "marginBottom": "5px"}),
+                            html.P(f"1h: {df_main.loc[site_id]['pct_change_1h']:.1f}%", style={"margin": "2px 0"}),
+                            html.P(f"3h: {df_main.loc[site_id]['pct_change_3h']:.1f}%", style={"margin": "2px 0"}),
+                            html.P(f"6h: {df_main.loc[site_id]['pct_change_6h']:.1f}%", style={"margin": "2px 0"}),
                         ]
                     ),
 
-                    # Vertical brown line separator
+                    # Vertical brown line between ROC and High Flow
                     html.Div(
                         style={
                             "width": "2px",
@@ -346,13 +318,38 @@ def display_page(pathname):
                         }
                     ),
 
-                    # Explanation area (right, bigger)
+                    # High Flow / Flow Rate
+                    html.Div(
+                        style={
+                            "lineHeight": "1.2",
+                            "flex": "0 0 180px",  # increased horizontal space
+                        },
+                        children=[
+                            html.H4("High Flow", style={"color": "#5A4A2F", "marginBottom": "5px"}),
+                            html.P(
+                                f"Status: {'HIGH FLOW' if df_main.loc[site_id]['flow_cfs'] >= df_main.loc[site_id]['p90_flow_cfs'] else 'Normal'}",
+                                style={"margin": "2px 0"}
+                            ),
+                            html.P(f"Threshold (90th percentile): {df_main.loc[site_id]['p90_flow_cfs']} cfs", style={"margin": "2px 0"}),
+                        ]
+                    ),
+
+                    # Vertical brown line separator before Explanation
+                    html.Div(
+                        style={
+                            "width": "2px",
+                            "backgroundColor": "#A18F65",
+                            "alignSelf": "stretch",
+                        }
+                    ),
+
+                    # Explanation area
                     html.Div(
                         style={
                             "flex": "1",
                             "minWidth": "300px",
-                            "fontSize": "15px",
                             "lineHeight": "1.5",
+                            "marginLeft": "10px",
                         },
                         children=[
                             html.H4("Explanation", style={"color": "#5A4A2F", "marginBottom": "10px"}),
