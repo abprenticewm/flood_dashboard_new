@@ -263,98 +263,110 @@ def display_page(pathname):
             # Page Title
             # -----------------------------
             html.H1(
-                f"Gauge: {site_name}",
+                f"{site_name}",
                 style={"textAlign": "center", "marginTop": "15px"}
             ),
-
+            
             # -----------------------------
-            # Top Bar – Site Info
+            # Site Info – centered below gauge title
             # -----------------------------
             html.Div(
                 style={
-                    "width": "100%",
-                    "padding": "8px 15px",
-                    "backgroundColor": "#F9F3EC",
-                    "border": "2px solid #A18F65",
-                    "borderRadius": "8px",
-                    "marginBottom": "15px",
+                    "textAlign": "center",
                     "fontWeight": "bold",
+                    "marginBottom": "15px",
                     "fontSize": "15px",
                 },
                 children=f"Site {df_main.loc[site_id]['site_no']} | Lat: {df_main.loc[site_id]['latitude']}° | Lon: {df_main.loc[site_id]['longitude']}°"
             ),
 
             # -----------------------------
-            # Three Sections: Rate of Change, High Flow, Explanation
+            # Main stats area – compact and pretty
             # -----------------------------
             html.Div(
                 style={
                     "display": "flex",
                     "flexDirection": "row",
-                    "justifyContent": "space-between",
+                    "alignItems": "flex-start",
                     "gap": "20px",
                     "marginBottom": "25px",
                     "flexWrap": "wrap",
                 },
                 children=[
 
-                    # Rate of Change Section
+                    # Left side: ROC and High Flow side by side
                     html.Div(
                         style={
-                            "flex": "1",
-                            "minWidth": "220px",
-                            "border": "2px solid #A18F65",
-                            "borderRadius": "8px",
-                            "backgroundColor": "#FDFBF7",
-                            "padding": "12px",
+                            "display": "flex",
+                            "flexDirection": "row",
+                            "gap": "20px",
+                            "flex": "0 0 auto",
+                            "alignItems": "flex-start",
                         },
                         children=[
-                            html.H4("Rate of Change (%)", style={"color": "#5A4A2F", "marginBottom": "10px"}),
-                            html.P(f"1h: {df_main.loc[site_id]['pct_change_1h']:.1f}%"),
-                            html.P(f"3h: {df_main.loc[site_id]['pct_change_3h']:.1f}%"),
-                            html.P(f"6h: {df_main.loc[site_id]['pct_change_6h']:.1f}%"),
-                        ]
-                    ),
 
-                    # High Flow Section
-                    html.Div(
-                        style={
-                            "flex": "1",
-                            "minWidth": "220px",
-                            "border": "2px solid #A18F65",
-                            "borderRadius": "8px",
-                            "backgroundColor": "#FDFBF7",
-                            "padding": "12px",
-                        },
-                        children=[
-                            html.H4("High Flow", style={"color": "#5A4A2F", "marginBottom": "10px"}),
-                            html.P(
-                                f"Status: {'HIGH FLOW' if df_main.loc[site_id]['flow_cfs'] >= df_main.loc[site_id]['p90_flow_cfs'] else 'Normal'}"
+                            # Rate of Change
+                            html.Div(
+                                style={
+                                    "fontSize": "16px",
+                                    "lineHeight": "1.2",
+                                },
+                                children=[
+                                    html.H4("Rate of Change (%)", style={"color": "#5A4A2F", "marginBottom": "5px"}),
+                                    html.P(f"1h: {df_main.loc[site_id]['pct_change_1h']:.1f}%", style={"margin": "2px 0"}),
+                                    html.P(f"3h: {df_main.loc[site_id]['pct_change_3h']:.1f}%", style={"margin": "2px 0"}),
+                                    html.P(f"6h: {df_main.loc[site_id]['pct_change_6h']:.1f}%", style={"margin": "2px 0"}),
+                                ]
                             ),
-                            html.P(f"Threshold (90th percentile): {df_main.loc[site_id]['p90_flow_cfs']} cfs"),
+
+                            # High Flow / Flow Rate
+                            html.Div(
+                                style={
+                                    "fontSize": "16px",
+                                    "lineHeight": "1.2",
+                                },
+                                children=[
+                                    html.H4("High Flow", style={"color": "#5A4A2F", "marginBottom": "5px"}),
+                                    html.P(
+                                        f"Status: {'HIGH FLOW' if df_main.loc[site_id]['flow_cfs'] >= df_main.loc[site_id]['p90_flow_cfs'] else 'Normal'}",
+                                        style={"margin": "2px 0"}
+                                    ),
+                                    html.P(f"Threshold (90th percentile): {df_main.loc[site_id]['p90_flow_cfs']} cfs", style={"margin": "2px 0"}),
+                                ]
+                            ),
                         ]
                     ),
 
-                    # Explanation Section
+                    # Vertical brown line separator
+                    html.Div(
+                        style={
+                            "width": "2px",
+                            "backgroundColor": "#A18F65",
+                            "alignSelf": "stretch",
+                        }
+                    ),
+
+                    # Explanation area (right, bigger)
                     html.Div(
                         style={
                             "flex": "1",
                             "minWidth": "300px",
-                            "border": "2px solid #A18F65",
-                            "borderRadius": "8px",
-                            "backgroundColor": "#FDFBF7",
-                            "padding": "12px",
-                            "fontSize": "14px",
-                            "lineHeight": "1.4",
+                            "fontSize": "15px",
+                            "lineHeight": "1.5",
                         },
                         children=[
                             html.H4("Explanation", style={"color": "#5A4A2F", "marginBottom": "10px"}),
-                            html.P("Rate of Change compares the current flow to previous measurements (1h, 3h, 6h)."),
-                            html.P("Values indicate the percent change in flow over the given time window."),
-                            html.P("The 90th percentile high flow threshold is calculated from ~20 years of historical USGS data for this calendar day."),
-                            html.P("If the current flow exceeds this threshold, the gauge is classified as HIGH FLOW."),
+                            html.P([
+                                html.B("Rate of Change"), 
+                                " compares the current flow to previous measurements (1h, 3h, 6h)."
+                            ], style={"marginBottom": "5px"}),
+                            html.P([
+                                "The ", html.B("90th percentile high flow threshold"), 
+                                " is calculated from ~20 years of historical USGS data for this calendar day. "
+                                "If the current flow exceeds this threshold, the gauge is classified as HIGH FLOW."
+                            ], style={"marginBottom": "5px"}),
                         ]
-                    ),
+                    )
                 ]
             ),
 
