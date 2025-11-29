@@ -377,36 +377,48 @@ def display_page(pathname):
             ),
 
             # -----------------------------
-            # Download Buttons
+            # Download buttons – horizontal layout
             # -----------------------------
-            html.Button(
-                "Download 6h Graph (PNG)",
-                id="download-graph-btn",
-                n_clicks=0,
+            html.Div(
                 style={
-                    "margin": "10px auto",
-                    "display": "block",
-                    "padding": "10px 20px",
-                    "fontSize": "16px"
-                }
+                    "display": "flex",
+                    "justifyContent": "space-evenly",
+                    "alignItems": "center",
+                    "margin": "15px 0",
+                    "flexWrap": "wrap",
+                    "gap": "10px",
+                },
+                children=[
+                    html.Button(
+                        "Download 6h Graph (PNG)",
+                        id="download-graph-btn",
+                        n_clicks=0,
+                        style={
+                            "padding": "10px 20px",
+                            "fontSize": "16px",
+                            "cursor": "pointer",
+                        }
+                    ),
+                    html.Button(
+                        "Download Full CSV (All Data for This Site)",
+                        id="download-fullcsv-btn",
+                        n_clicks=0,
+                        style={
+                            "padding": "10px 20px",
+                            "fontSize": "16px",
+                            "cursor": "pointer",
+                        }
+                    ),
+                ]
             ),
 
-            html.Button(
-                "Download Full CSV (24hr Data for Site)",
-                id="download-fullcsv-btn",
-                n_clicks=0,
-                style={
-                    "margin": "10px auto",
-                    "display": "block",
-                    "padding": "10px 20px",
-                    "fontSize": "16px"
-                }
-            ),
-
+            # -----------------------------
+            # Hidden dcc.Download components – MUST BE OUTSIDE FLEX CONTAINER
+            # -----------------------------
             dcc.Download(id="download-graph-file"),
             dcc.Download(id="download-fullcsv-file"),
 
-            html.Br(),
+
 
            
             # -----------------------------
