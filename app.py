@@ -258,8 +258,18 @@ def display_page(pathname):
         fig.update_layout(height=500, margin=dict(l=20, r=20, t=40, b=20))
 
         return html.Div([
-            html.H1(f"Gauge: {site_name}", style={"textAlign": "center"}),
 
+            # -----------------------------
+            # Page Title
+            # -----------------------------
+            html.H1(
+                f"Gauge: {site_name}",
+                style={"textAlign": "center", "marginTop": "15px"}
+            ),
+
+            # -----------------------------
+            # 6-hour Graph
+            # -----------------------------
             dcc.Graph(
                 id="gauge-timeseries",
                 figure=fig,
@@ -267,7 +277,7 @@ def display_page(pathname):
             ),
 
             # -----------------------------
-            # Download buttons
+            # Download Buttons
             # -----------------------------
             html.Button(
                 "Download 6h Graph (PNG)",
@@ -282,7 +292,7 @@ def display_page(pathname):
             ),
 
             html.Button(
-                "Download Full CSV (All Data for This Site)",
+                "Download Full CSV (24hr Data for Site)",
                 id="download-fullcsv-btn",
                 n_clicks=0,
                 style={
@@ -298,14 +308,73 @@ def display_page(pathname):
 
             html.Br(),
 
+            # -----------------------------
+            # Gauge Stats
+            # -----------------------------
             html.Ul([
                 html.Li(f"Site Number: {site_no}"),
                 html.Li(f"Most Recent Flow: {df_main.loc[site_id]['flow_cfs']} cfs"),
                 html.Li(f"P90 Flow: {df_main.loc[site_id]['p90_flow_cfs']} cfs"),
                 html.Li(f"Percent of P90: {df_main.loc[site_id]['ratio']*100:.1f}%"),
-                html.Li(f"3h Percent Change: {df_main.loc[site_id]['pct_change_3h']}")
-            ])
+                html.Li(f"3h Percent Change: {df_main.loc[site_id]['pct_change_3h']}"),
+            ],
+            style={"fontSize": "16px", "width": "80%", "margin": "0 auto"}),
+
+            html.Br(),
+
+            # -----------------------------
+            # Notes Section (Two Styled Boxes)
+            # -----------------------------
+            html.Div([
+
+                # Box 1 – Missing Data
+                html.Div([
+                    html.H4("Missing Data"),
+                    html.P(
+                        "Missing data is recorded by the USGS as -9999. In data downloads this "
+                        "number is preserved. In graphs, missing data is converted to NaN and "
+                        "appears as a break in the plotted line."
+                    )
+                ],
+                style={
+                    "border": "2px solid #A18F65",
+                    "borderRadius": "8px",
+                    "padding": "12px",
+                    "margin": "10px",
+                    "flex": "1",
+                    "background": "#fdfbf7"
+                }),
+
+                # Box 2 – Negative Flow
+                html.Div([
+                    html.H4("Negative Flow"),
+                    html.P(
+                        "Negative flow rates can occur in tidal areas where water reverses "
+                        "direction during high tide and temporarily flows upstream."
+                    )
+                ],
+                style={
+                    "border": "2px solid #A18F65",
+                    "borderRadius": "8px",
+                    "padding": "12px",
+                    "margin": "10px",
+                    "flex": "1",
+                    "background": "#fdfbf7"
+                })
+
+            ],
+            style={
+                "display": "flex",
+                "flexDirection": "row",
+                "justifyContent": "space-between",
+                "width": "90%",
+                "margin": "20px auto",
+                "flexWrap": "wrap"
+            })
+
         ])
+
+
 
 
     else:
