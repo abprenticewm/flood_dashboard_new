@@ -5,6 +5,10 @@ import webbrowser
 from threading import Timer
 import os
 import numpy as np
+import update_pipeline
+
+# Run the pipeline immediately on app start
+update_pipeline.main()
 
 DATA_FILE = "data/gauge_data_processed.csv"
 
@@ -92,9 +96,6 @@ app.layout = html.Div([
 ])
 
 
-# -------------------------------
-# Main map page layout (with sidebar)
-# -------------------------------
 # -------------------------------
 # Main map page layout (with sidebar)
 # -------------------------------
@@ -503,8 +504,13 @@ def unique_filename(base_name, ext):
     Input("refresh-btn", "n_clicks")
 )
 def update_map(n_clicks):
+    # Re-run the pipeline
+    update_pipeline.main()
+
+    # Read the newly processed CSV
     df = pd.read_csv(DATA_FILE)
     return build_map(df)
+
 
 
 # -------------------------------
