@@ -268,6 +268,97 @@ def display_page(pathname):
             ),
 
             # -----------------------------
+            # Top Bar – Site Info
+            # -----------------------------
+            html.Div(
+                style={
+                    "width": "100%",
+                    "padding": "8px 15px",
+                    "backgroundColor": "#F9F3EC",
+                    "border": "2px solid #A18F65",
+                    "borderRadius": "8px",
+                    "marginBottom": "15px",
+                    "fontWeight": "bold",
+                    "fontSize": "15px",
+                },
+                children=f"Site {df_main.loc[site_id]['site_no']} | Lat: {df_main.loc[site_id]['latitude']}° | Lon: {df_main.loc[site_id]['longitude']}°"
+            ),
+
+            # -----------------------------
+            # Three Sections: Rate of Change, High Flow, Explanation
+            # -----------------------------
+            html.Div(
+                style={
+                    "display": "flex",
+                    "flexDirection": "row",
+                    "justifyContent": "space-between",
+                    "gap": "20px",
+                    "marginBottom": "25px",
+                    "flexWrap": "wrap",
+                },
+                children=[
+
+                    # Rate of Change Section
+                    html.Div(
+                        style={
+                            "flex": "1",
+                            "minWidth": "220px",
+                            "border": "2px solid #A18F65",
+                            "borderRadius": "8px",
+                            "backgroundColor": "#FDFBF7",
+                            "padding": "12px",
+                        },
+                        children=[
+                            html.H4("Rate of Change (%)", style={"color": "#5A4A2F", "marginBottom": "10px"}),
+                            html.P(f"1h: {df_main.loc[site_id]['pct_change_1h']:.1f}%"),
+                            html.P(f"3h: {df_main.loc[site_id]['pct_change_3h']:.1f}%"),
+                            html.P(f"6h: {df_main.loc[site_id]['pct_change_6h']:.1f}%"),
+                        ]
+                    ),
+
+                    # High Flow Section
+                    html.Div(
+                        style={
+                            "flex": "1",
+                            "minWidth": "220px",
+                            "border": "2px solid #A18F65",
+                            "borderRadius": "8px",
+                            "backgroundColor": "#FDFBF7",
+                            "padding": "12px",
+                        },
+                        children=[
+                            html.H4("High Flow", style={"color": "#5A4A2F", "marginBottom": "10px"}),
+                            html.P(
+                                f"Status: {'HIGH FLOW' if df_main.loc[site_id]['flow_cfs'] >= df_main.loc[site_id]['p90_flow_cfs'] else 'Normal'}"
+                            ),
+                            html.P(f"Threshold (90th percentile): {df_main.loc[site_id]['p90_flow_cfs']} cfs"),
+                        ]
+                    ),
+
+                    # Explanation Section
+                    html.Div(
+                        style={
+                            "flex": "1",
+                            "minWidth": "300px",
+                            "border": "2px solid #A18F65",
+                            "borderRadius": "8px",
+                            "backgroundColor": "#FDFBF7",
+                            "padding": "12px",
+                            "fontSize": "14px",
+                            "lineHeight": "1.4",
+                        },
+                        children=[
+                            html.H4("Explanation", style={"color": "#5A4A2F", "marginBottom": "10px"}),
+                            html.P("Rate of Change compares the current flow to previous measurements (1h, 3h, 6h)."),
+                            html.P("Values indicate the percent change in flow over the given time window."),
+                            html.P("The 90th percentile high flow threshold is calculated from ~20 years of historical USGS data for this calendar day."),
+                            html.P("If the current flow exceeds this threshold, the gauge is classified as HIGH FLOW."),
+                        ]
+                    ),
+                ]
+            ),
+
+            # -----------------------------
             # 6-hour Graph
             # -----------------------------
             dcc.Graph(
@@ -308,20 +399,7 @@ def display_page(pathname):
 
             html.Br(),
 
-            # -----------------------------
-            # Gauge Stats
-            # -----------------------------
-            html.Ul([
-                html.Li(f"Site Number: {site_no}"),
-                html.Li(f"Most Recent Flow: {df_main.loc[site_id]['flow_cfs']} cfs"),
-                html.Li(f"P90 Flow: {df_main.loc[site_id]['p90_flow_cfs']} cfs"),
-                html.Li(f"Percent of P90: {df_main.loc[site_id]['ratio']*100:.1f}%"),
-                html.Li(f"3h Percent Change: {df_main.loc[site_id]['pct_change_3h']}"),
-            ],
-            style={"fontSize": "16px", "width": "80%", "margin": "0 auto"}),
-
-            html.Br(),
-
+           
             # -----------------------------
             # Notes Section (Two Styled Boxes)
             # -----------------------------
