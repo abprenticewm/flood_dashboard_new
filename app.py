@@ -95,20 +95,40 @@ app.layout = html.Div([
 # -------------------------------
 # Main map page layout (with sidebar)
 # -------------------------------
+# -------------------------------
+# Main map page layout (with sidebar)
+# -------------------------------
 def main_map_layout():
     df = pd.read_csv(DATA_FILE)
 
     return html.Div([
-        # Whole page container
+
+        # Entire page container
         html.Div([
-            # ---- Sidebar ----
+
+            # ----------------------- Sidebar -----------------------
             html.Div([
-                # Dashboard title
-                html.H1("VA Flood Risk Map", style={"textAlign": "center", "marginTop": "10px"}),
+
+                # Title
+                html.H1(
+                    "VA Flood Risk Map",
+                    style={"textAlign": "center", "marginTop": "10px"}
+                ),
 
                 html.Hr(),
 
-                # Refresh button
+                # ----- Description -----
+                html.H3("About This Map"),
+                html.P(
+                    "This dashboard maps current flood risk across Virginia using real-time "
+                    "USGS stream gauge data. The newest available data loads automatically "
+                    "when the dashboard opens.",
+                    style={"fontSize": "14px"}
+                ),
+
+                html.Hr(),
+
+                # ----- Refresh button -----
                 html.Button(
                     "Refresh Data",
                     id="refresh-btn",
@@ -117,25 +137,57 @@ def main_map_layout():
                         "display": "block",
                         "margin": "10px auto",
                         "padding": "10px 20px",
-                        "fontSize": "16px",
+                        "fontSize": "16px"
                     }
                 ),
+                html.P(
+                    "Click to manually refresh data. Values may not change if USGS has not "
+                    "published a newer reading yet.",
+                    style={"fontSize": "13px", "textAlign": "center", "marginTop": "5px"}
+                ),
 
-                # Placeholder for future sidebar content
-                html.P("Add legend or explanations here later.")
+                html.Hr(),
+
+                # ----- Legend -----
+                html.H3("Legend"),
+
+                html.P("Flow Trend (3-hour % change):", style={"marginBottom": "4px"}),
+                html.Ul([
+                    html.Li("Brown  — flow stable or decreasing (≤ 0%)"),
+                    html.Li("Blue  — rising moderately (0% to 25%)"),
+                    html.Li("Red  — sharp rise (> 25%)"),
+                ], style={"fontSize": "13px"}),
+
+                html.Br(),
+
+                html.P("Flow in cubic feet per second (cfs):", style={"marginBottom": "4px"}),
+                html.Ul([
+                    html.Li("Small dot — 0 to 50 cfs"),
+                    html.Li("Medium dot — 51 to 200 cfs"),
+                    html.Li("Large dot — above 200 cfs")
+                ], style={"fontSize": "13px"}),
+
+                html.Hr(),
+
+                # ----- Instructions -----
+                html.H3("How to Use"),
+                html.Ul([
+                    html.Li("Hover a gauge to view summary statistics."),
+                    html.Li("Click a gauge to open a detailed page with more data."),
+                ], style={"fontSize": "13px"}),
+
             ],
             style={
                 "width": "20%",
-                "minWidth": "180px",
+                "minWidth": "200px",
                 "background": "#f3f3f3",
                 "padding": "15px",
-                "overflowY": "auto",  # sidebar scrolls if content too long
+                "overflowY": "auto",
                 "boxSizing": "border-box"
             }),
 
-            # ---- Map area ----
+            # ----------------------- Map Section -----------------------
             html.Div([
-                # MAP fills all remaining vertical space
                 dcc.Graph(
                     id="map-graph",
                     figure=build_map(df),
@@ -143,19 +195,20 @@ def main_map_layout():
                 )
             ],
             style={
-                "flex": "1",             # take remaining width
+                "flex": "1",
                 "display": "flex",
                 "flexDirection": "column",
                 "overflow": "hidden"
             }),
+
         ],
         style={
             "display": "flex",
-            "height": "100vh",  # full viewport height
+            "height": "100vh",
             "overflow": "hidden"
         })
-    ])
 
+    ])
 
 
 
