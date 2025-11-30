@@ -6,6 +6,7 @@ from threading import Timer
 import os
 import numpy as np
 import update_pipeline
+import tzlocal
 
 # Run the pipeline immediately on app start
 update_pipeline.main()
@@ -245,29 +246,41 @@ def display_page(pathname):
         site_no = df_main.loc[site_id]["site_no"]
         site_name = df_main.loc[site_id]["site_name"]
 
-        # Read full time-series CSV (DO NOT modify -9999 here)
+        # Read full time-series CSV 
         ts = pd.read_csv("data/gauge_data.csv")
         ts["timestamp_utc"] = pd.to_datetime(ts["timestamp_utc"])
 
+        # Convert to local computer timezone — handle already tz-aware
+        import tzlocal
+        local_tz = tzlocal.get_localzone()  # detect local timezone
+
+        # Only convert if tz-aware, otherwise localize first
+        if ts["timestamp_utc"].dt.tz is None:
+            ts["timestamp_local"] = ts["timestamp_utc"].dt.tz_localize('UTC').dt.tz_convert(local_tz)
+        else:
+            ts["timestamp_local"] = ts["timestamp_utc"].dt.tz_convert(local_tz)
+
         # Filter to this gauge only
-        gauge_df = ts[ts["site_no"] == site_no].sort_values("timestamp_utc")
+        gauge_df = ts[ts["site_no"] == site_no].sort_values("timestamp_local")
 
         # 6-hour window
         if not gauge_df.empty:
-            latest_time = gauge_df["timestamp_utc"].max()
+            latest_time = gauge_df["timestamp_local"].max()
             cutoff = latest_time - pd.Timedelta(hours=6)
-            gauge_6h = gauge_df[gauge_df["timestamp_utc"] >= cutoff]
+            gauge_6h = gauge_df[gauge_df["timestamp_local"] >= cutoff]
         else:
             gauge_6h = gauge_df.copy()
 
         # Build 6-hour graph
         fig = px.line(
             gauge_6h,
-            x="timestamp_utc",
+            x="timestamp_local",
             y="flow_cfs",
             title=f"Last 6 Hours — {site_name}",
-            labels={"timestamp_utc": "Time (UTC)", "flow_cfs": "Flow (cfs)"}
+            labels={"timestamp_local": "Time (Local)", "flow_cfs": "Flow (cfs)"}
         )
+
+
 
         fig.update_layout(height=500, margin=dict(l=20, r=20, t=40, b=20))
 
