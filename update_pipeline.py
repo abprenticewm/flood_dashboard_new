@@ -2,9 +2,12 @@
 
 import subprocess
 import sys
+import os  # <-- needed for file check
+
+HISTORICAL_FILE = os.path.join("data", "historical_p90.csv")
 
 def run(script):
-    print(f"\n Running {script}...")
+    print(f"\nRunning {script}...")
     r = subprocess.run([sys.executable, script])
     if r.returncode != 0:
         print(f"Error running {script}")
@@ -16,7 +19,10 @@ def main():
     run("fetch_data.py")
 
     # make sure historical file exists
-    run("fetch_historical.py")
+    if not os.path.exists(HISTORICAL_FILE):
+        run("fetch_historical.py")
+    else:
+        print(f"{HISTORICAL_FILE} already exists, skipping historical fetch.")
 
     # process into dashboard-ready CSV
     run("process_gauge_data.py")
