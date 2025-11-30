@@ -250,11 +250,10 @@ def display_page(pathname):
         ts = pd.read_csv("data/gauge_data.csv")
         ts["timestamp_utc"] = pd.to_datetime(ts["timestamp_utc"])
 
-        # Convert to local computer timezone — handle already tz-aware
-        import tzlocal
-        local_tz = tzlocal.get_localzone()  # detect local timezone
+        # Get local timezone
+        local_tz = tzlocal.get_localzone()  # e.g., 'America/New_York'
 
-        # Only convert if tz-aware, otherwise localize first
+        # Only convert if tz-aware
         if ts["timestamp_utc"].dt.tz is None:
             ts["timestamp_local"] = ts["timestamp_utc"].dt.tz_localize('UTC').dt.tz_convert(local_tz)
         else:
@@ -276,9 +275,17 @@ def display_page(pathname):
             gauge_6h,
             x="timestamp_local",
             y="flow_cfs",
-            title=f"Last 6 Hours — {site_name}",
-            labels={"timestamp_local": "Time (Local)", "flow_cfs": "Flow (cfs)"}
+            title=f"{site_name}",
+            labels={"timestamp_local": f"Time ({str(local_tz)})", "flow_cfs": "Flow (cfs)"}
         )
+
+        # Center the title
+        fig.update_layout(
+            title={'x':0.5, 'xanchor': 'center'},
+            height=500,
+            margin=dict(l=20, r=20, t=40, b=20)
+        )
+
 
 
 
