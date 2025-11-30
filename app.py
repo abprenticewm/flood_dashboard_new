@@ -122,26 +122,27 @@ def main_map_layout():
         html.Div([
 
             # ----------------------- Sidebar -----------------------
+            # ----------------------- Sidebar -----------------------
             html.Div([
 
                 # Title
                 html.H1(
                     "VA Flood Risk Map",
-                    style={"textAlign": "center", "marginTop": "10px"}
+                    style={"textAlign": "center", "marginTop": "10px", "color": "white"}
                 ),
 
-                html.Hr(),
+                html.Hr(style={"borderColor": "white"}),
 
                 # ----- Description -----
-                html.H3("About This Map"),
+                html.H3("About This Map", style={"color": "white"}),
                 html.P(
                     "This dashboard maps current flood risk across Virginia using real-time "
                     "USGS stream gauge data. The newest available data loads automatically "
                     "when the dashboard opens.",
-                    style={"fontSize": "14px"}
+                    style={"fontSize": "14px", "color": "white"}
                 ),
 
-                html.Hr(),
+                html.Hr(style={"borderColor": "white"}),
 
                 # ----- Refresh button -----
                 html.Button(
@@ -152,54 +153,60 @@ def main_map_layout():
                         "display": "block",
                         "margin": "10px auto",
                         "padding": "10px 20px",
-                        "fontSize": "16px"
+                        "fontSize": "16px",
+                        "backgroundColor": "#D3D3D3",  # very light gray
+                        "color": "black",
+                        "border": "none",
+                        "borderRadius": "4px",
+                        "cursor": "pointer"
                     }
                 ),
                 html.P(
                     "Click to manually refresh data. Values may not change if USGS has not "
                     "published a newer reading yet.",
-                    style={"fontSize": "13px", "textAlign": "center", "marginTop": "5px"}
+                    style={"fontSize": "13px", "textAlign": "center", "marginTop": "5px", "color": "white"}
                 ),
 
-                html.Hr(),
+                html.Hr(style={"borderColor": "white"}),
 
                 # ----- Legend -----
-                html.H3("Legend"),
+                html.H3("Legend", style={"color": "white"}),
 
-                html.P("Flow Trend (3-hour % change):", style={"marginBottom": "4px"}),
+                html.P("Flow Trend (3-hour % change):", style={"marginBottom": "4px", "color": "white"}),
                 html.Ul([
-                    html.Li("Brown  — flow stable or decreasing (≤ 0%)"),
-                    html.Li("Blue  — rising moderately (0% to 25%)"),
-                    html.Li("Red  — sharp rise (> 25%)"),
+                    html.Li("Brown  — flow stable or decreasing (≤ 0%)", style={"color": "white"}),
+                    html.Li("Blue  — rising moderately (0% to 25%)", style={"color": "white"}),
+                    html.Li("Red  — sharp rise (> 25%)", style={"color": "white"}),
                 ], style={"fontSize": "13px"}),
 
                 html.Br(),
 
-                html.P("Flow in cubic feet per second (cfs):", style={"marginBottom": "4px"}),
+                html.P("Flow in cubic feet per second (cfs):", style={"marginBottom": "4px", "color": "white"}),
                 html.Ul([
-                    html.Li("Small dot — 0 to 50 cfs"),
-                    html.Li("Medium dot — 51 to 200 cfs"),
-                    html.Li("Large dot — above 200 cfs")
+                    html.Li("Small dot — 0 to 50 cfs", style={"color": "white"}),
+                    html.Li("Medium dot — 51 to 200 cfs", style={"color": "white"}),
+                    html.Li("Large dot — above 200 cfs", style={"color": "white"})
                 ], style={"fontSize": "13px"}),
 
-                html.Hr(),
+                html.Hr(style={"borderColor": "white"}),
 
                 # ----- Instructions -----
-                html.H3("How to Use"),
+                html.H3("How to Use", style={"color": "white"}),
                 html.Ul([
-                    html.Li("Hover a gauge to view summary statistics."),
-                    html.Li("Click a gauge to open a detailed page with more data."),
+                    html.Li("Hover a gauge to view summary statistics.", style={"color": "white"}),
+                    html.Li("Click a gauge to open a detailed page with more data.", style={"color": "white"}),
                 ], style={"fontSize": "13px"}),
 
             ],
             style={
                 "width": "20%",
                 "minWidth": "200px",
-                "background": "#f3f3f3",
+                "background": "#1A1F4B",  # dark navy blue
                 "padding": "15px",
                 "overflowY": "auto",
-                "boxSizing": "border-box"
+                "boxSizing": "border-box",
             }),
+
 
             # ----------------------- Map Section -----------------------
             html.Div([
