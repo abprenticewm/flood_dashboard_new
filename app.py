@@ -44,10 +44,18 @@ def build_map(df):
 
     df["size_class"] = df["flow_cfs"].apply(size_class)
 
+    # NEW — Add a clean "Status" field
+    df["status"] = np.where(
+        df["flow_cfs"] >= df["p90_flow_cfs"],
+        "HIGH FLOW",
+        "Normal Flow"
+    )
+
     # Calculate center for initial zoom
     center_lat = df["latitude"].mean()
     center_lon = df["longitude"].mean()
 
+    # MAIN FIGURE — only custom_data/hover_data changed
     fig = px.scatter_map(
         df,
         lat="latitude",
@@ -55,21 +63,15 @@ def build_map(df):
         color="color_group",
         size="size_class",
         hover_name="site_name",
-        hover_data={
-            "flow_cfs": True,
-            "p90_flow_cfs": True,
-            "ratio": True,
-            "pct_change_3h": True,
-            "latitude": False,
-            "longitude": False
-        },
+        hover_data={},   # 🔥 override default hover
         custom_data=[
-            "site_id",
-            "site_name",
-            "flow_cfs",
-            "p90_flow_cfs",
-            "ratio",
-            "pct_change_3h"
+            "site_id",        # 0
+            "site_name",      # 1
+            "flow_cfs",       # 2
+            "p90_flow_cfs",   # 3
+            "ratio",          # 4
+            "pct_change_3h",  # 5
+            "status"          # 6
         ],
         zoom=6,
         center={"lat": center_lat, "lon": center_lon},
@@ -81,8 +83,19 @@ def build_map(df):
         }
     )
 
+    # NEW — Clean hovertemplate
+    fig.update_traces(
+        hovertemplate=
+        "<b>%{customdata[1]}</b><br>" +
+        "Current Flow: %{customdata[2]:.3f} cfs<br>" +
+        "3-Hour ROC: %{customdata[5]:+.3f} %<br>" +
+        "Status: %{customdata[6]}<br>" +
+        "<extra></extra>"
+    )
+
     fig.update_layout(showlegend=False)
     fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
+
     return fig
 
 
